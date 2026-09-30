@@ -1,1 +1,7 @@
-export const VERSION = '0.1.0'
+export { defineFloors, rect, circle, stairs, ramp, climb, narrow, spot } from './floors'
+export type { Floors, FloorDef, LinkDef, SpotDef, Shape } from './floors'
+export { addCats, playApi } from './cats'
+export type { KitCat, Seats, TargetProvider, AddCatsOptions, Playmate } from './options'
+export { showFloors } from './debug'
+export { setSoundRoot } from './voices'
+export { VERSION } from './version'
