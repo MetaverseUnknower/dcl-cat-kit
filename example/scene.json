@@ -1,0 +1,48 @@
+{
+  "ecs7": true,
+  "runtimeVersion": "7",
+  "display": {
+    "title": "dcl-cat-kit example",
+    "description": "A room with a loft and stairs, and three of the MetaPetal Cat Cafe's cats (dcl-cat-kit)"
+  },
+  "owner": "",
+  "contact": {
+    "name": "",
+    "email": ""
+  },
+  "main": "bin/index.js",
+  "tags": [],
+  "scene": {
+    "parcels": [
+      "0,0"
+    ],
+    "base": "0,0"
+  },
+  "spawnPoints": [
+    {
+      "name": "spawn1",
+      "default": true,
+      "position": {
+        "x": [
+          7,
+          9
+        ],
+        "y": [
+          0,
+          0
+        ],
+        "z": [
+          1,
+          2
+        ]
+      },
+      "cameraTarget": {
+        "x": 8,
+        "y": 1.5,
+        "z": 10
+      }
+    }
+  ],
+  "requiredPermissions": [],
+  "featureToggles": {}
+}
