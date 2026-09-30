@@ -5,4 +5,5 @@ export type { KitCat, Seats, TargetProvider, AddCatsOptions, Playmate } from './
 export { showFloors } from './debug'
 export { CAFE_CATS } from './catalog'
 export { setSoundRoot } from './voices'
+export { setDayStart } from './routine'
 export { VERSION } from './version'

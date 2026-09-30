@@ -1,8 +1,9 @@
 import { engine, Transform, AudioSource } from '@dcl/sdk/ecs'
 import { Vector3 } from '@dcl/sdk/math'
 import { getPlayer } from '@dcl/sdk/players'
-import { CatSpec, Pose, makeRoutine } from './routine'
-import { AddCatsOptions, KitCat, Playmate, seatOf, syncBase } from './options'
+import { CatSpec, Pose, makeRoutine, setDayStart } from './routine'
+import { AddCatsOptions, KitCat, Playmate, missingModels, seatOf, syncBase } from './options'
+import { getSceneInformation } from '~system/Runtime'
 import { setSoundRoot, callClip } from './voices'
 import { initIntents, readIntent, writeIntent } from './shared'
 import { NONE, canClaim, claim, extend, isActive } from './intents'
@@ -35,6 +36,14 @@ export const playApi = {
 
 export function addCats(o: AddCatsOptions) {
   if (o.sounds) setSoundRoot(o.sounds)
+  if (o.dayStartUtcHour !== undefined) setDayStart(o.dayStartUtcHour)
+  // Best effort: say which cats' files aren't in the scene (copy-assets not run), rather than leave them invisible
+  void getSceneInformation({})
+    .then((info) => {
+      const missing = missingModels(info.content.map((c) => c.file), [...o.cats, ...(o.guests?.cats ?? [])])
+      if (missing.length) console.error(`dcl-cat-kit: no model files for ${missing.join(', ')}: run \`npx dcl-cat-kit-copy-assets\` in your scene folder`)
+    })
+    .catch(() => {})
   setNarrow(o.floors.narrow)
   const homes = o.floors.homes(o.cats.length + (o.guests?.perDay ?? 0))
   const RESIDENTS: CatSpec[] = o.cats.map((c, k) => ({ ...c, home: c.home ?? homes[k] }))
@@ -176,7 +185,7 @@ export function addCats(o: AddCatsOptions) {
       // At a watch spot (optional): eyes on what's there, tail flicking, and now and then a chatter.
       const pose = today.poses[i]
       const watching = s.mode === 'routine' && !pose.moving && SPOTS[pose.spot]?.watch !== undefined
-      const bird = watching && o.watch ? o.watch.targets(now, pose.spot) ?? undefined : undefined
+      const bird = watching && o.watch ? o.watch.targets(now, SPOTS[pose.spot].watch!) ?? undefined : undefined
       if (bird) s.lookAt = { x: bird.x, z: bird.z }
       const chat = !!bird && !!o.watch?.chatter?.(now, i)
       if (chat && !chattering[i]) AudioSource.playSound(rigs[i].voice, chatterClip(voiceOf(c)), true)

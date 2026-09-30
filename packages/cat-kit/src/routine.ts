@@ -4,8 +4,8 @@ import { AVOID_R, Link, Nav, P3, Timeline, passesNear, poseOn, route, timeline }
 
 /**
  * The cats' day, worked out from the clock alone so every visitor sees the same
- * thing. Starting from home at the day's turnover (10:00 UTC, early morning in
- * Florida), each cat rests a while, gets up, walks (or hops) to a free favourite
+ * thing. Starting from home at the day's turnover (10:00 UTC by default; a scene sets its
+ * own with setDayStart, early morning where most of its visitors are), each cat rests a while, gets up, walks (or hops) to a free favourite
  * spot, settles, and so on; in the last half hour everyone heads home to sleep,
  * so the next day starts exactly where this one ends.
  */
@@ -22,7 +22,11 @@ export type Pose = {
   busy: boolean
 }
 
-export const DAY_START_UTC_HOUR = 10
+/** The hour (UTC) the cats' day turns over: they're home asleep for the half hour before it. */
+export let DAY_START_UTC_HOUR = 10
+export function setDayStart(hourUtc: number) {
+  DAY_START_UTC_HOUR = ((hourUtc % 24) + 24) % 24
+}
 export const HOME_BY_MS = 30 * 60_000
 const DAY_MS = 86_400_000
 const WALK = 0.42 // m/s, times the cat's scale
@@ -110,7 +114,7 @@ export function makeRoutine(residents: CatSpec[], regulars: Regular[], guestHome
   }
   const reset = (d0: number) => {
     day0 = d0
-    const guests = guestsForDay(dayIndex(d0), regulars.length).map((k, j) => ({ ...regulars[k], home: guestHomes[j] }))
+    const guests = guestsForDay(dayIndex(d0), regulars.length, guestHomes.length).map((k, j) => ({ ...regulars[k], home: guestHomes[j] }))
     cats = [...residents, ...guests]
     homes = new Set(cats.map((c) => c.home))
     // Everyone starts the day asleep at home, curled up from the night before.
