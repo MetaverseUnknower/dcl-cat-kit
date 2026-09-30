@@ -1,0 +1,14 @@
+{
+  "name": "dcl-cat-kit",
+  "version": "0.1.0",
+  "description": "Living cats for Decentraland SDK7 scenes: a daily routine, petting, calling, greeting, and cats that curl up by you",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": { "dcl-cat-kit-copy-assets": "bin/copy-assets.mjs" },
+  "files": ["dist", "assets", "bin", "README.md"],
+  "scripts": { "build": "tsc -p .", "test": "vitest run" },
+  "keywords": ["decentraland", "dcl", "sdk7", "cats", "pets", "npc"],
+  "peerDependencies": { "@dcl/sdk": ">=7.20.0" },
+  "repository": { "type": "git", "url": "git+https://github.com/MetaverseUnknower/dcl-cat-kit.git", "directory": "packages/cat-kit" }
+}

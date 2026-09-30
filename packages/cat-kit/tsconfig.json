@@ -1,0 +1,5 @@
+{
+  "extends": "@dcl/sdk/types/tsconfig.ecs7.json",
+  "compilerOptions": { "outDir": "dist", "rootDir": "src", "declaration": true, "noEmit": false, "inlineSourceMap": false, "inlineSources": false, "strict": true },
+  "include": ["src/**/*.ts"]
+}

@@ -1,0 +1,5 @@
+node_modules/
+dist/
+example/assets/dcl-cat-kit/
+example/bin/
+*.log
