@@ -1,34 +1,54 @@
-# dcl-cat-kit: instructions for AI agents
+# Working on dcl-cat-kit
 
-Read this before adding cats to someone's Decentraland SDK7 scene. The README has the full reference. This page covers the steps, the rules that agents tend to get wrong, and how to check your work.
+These instructions are for agents (and people) changing the kit itself. **Setting up cats in a scene?** Read [`packages/cat-kit/AGENTS.md`](./packages/cat-kit/AGENTS.md) instead.
 
-## Steps
+## Layout
 
-1. **Install the kit, then copy its assets.** In the scene folder (the one with `scene.json`), run `npm install dcl-cat-kit` and then `npx dcl-cat-kit-copy-assets`. The copy step is required: without it the cats are invisible and nothing fails loudly. Check that `assets/dcl-cat-kit/cats/faith-body.glb` exists afterwards.
-2. **Read the scene before you describe its floors.** Find the walkable surfaces in the scene's code and models: the ground, raised floors, mezzanines and balconies, plus their heights. Find the obstacles too: furniture, walls, pillars and water. Read `scene.json` for the parcels. Each parcel is 16 × 16 m, and the scene's coordinates start at the corner of its base parcel.
-3. **Write `defineFloors`** inside `main()`. The rules are below.
-4. **Call `addCats` once**, also inside `main()`.
-5. **Add `showFloors(floors)`** while you work, and ask the person to look at the scene in the preview (`npm run start`). Remove it once they're happy.
+- `packages/cat-kit/src/`: the package. Some files are pure logic and can be tested in Node. The others use the scene runtime and can only run in a scene.
+  - **Pure, tested:**
+    - `floors.ts`: `defineFloors`, shapes, links and spots.
+    - `routine.ts`: the daily routine.
+    - `controller.ts`: each cat's behaviour, frame by frame.
+    - `path.ts`: routes over the floors.
+    - `intents.ts`: the claims (visit, pet, sit, play, chase, catch).
+    - `greet.ts`, `gaze.ts`, `blink.ts`, `hover.ts`, `purr.ts`, `voices.ts`, `geom.ts`, `leap.ts`.
+    - `options.ts`: option types, and the set-up checks that `addCats` logs.
+    - `catalog.ts`: `CAFE_CATS`.
+    - `shape.ts`: the prebuilt models' proportions (`RIG`, `POSE`).
+    - `version.ts`.
+  - **Scene runtime only** (they import `@dcl/sdk/ecs` or `~system/*`):
+    - `cats.ts`: `addCats`, which wires everything together.
+    - `rig.ts`: the cats' models and posing.
+    - `shared.ts`: the synced claims.
+    - `debug.ts`: `showFloors`.
+    - `index.ts`.
+- `packages/cat-kit/bin/`: the commands. `copy-assets.mjs` copies the cats into a scene. `measure.mjs` uses the logic in `glb-bounds.mjs`, which is tested.
+- `packages/cat-kit/assets/`: the cats' models (`cats/<key>-<part>.glb` and one shared texture) and voices (`sounds/`). These are CC BY 4.0, not MIT.
+- `packages/cat-kit/test/`: the vitest tests. `fixtures/` holds a real scene's floors (the MetaPetal Cat Cafe's), used by the older tests.
+- `example/`: a scene that uses the kit and dcl-sittables. It's the manual test.
+- `skills/dcl-cat-kit/SKILL.md` and the root `README.md` are **generated** from `packages/cat-kit/AGENTS.md` and `README.md` by `node scripts/sync-docs.mjs`. Edit the package's copies, then run the script. A test fails if they drift.
+
+## Commands
+
+Use Node 18 or later (the SDK and vitest fail on Node 16).
+
+```sh
+npm install
+npm test                    # all tests (vitest, in packages/cat-kit)
+npm run build               # the package, into packages/cat-kit/dist
+node scripts/sync-docs.mjs  # after editing the package's README.md or AGENTS.md
+npm run example             # build, copy assets into the example, and start its preview
+```
 
 ## Rules
 
-- **Use scene coordinates in metres**: `x` and `z` across the ground, `y` up. They aren't parcel numbers, and they aren't world coordinates.
-- **Every floor needs `walk` shapes** where cats can really stand. Stay inside the scene's parcels, and draw shapes at the real edges: the kit adds its own margin, about 30 cm.
-- **Put furniture in `avoid`** on the floor it stands on. Something a cat should jump onto, like a table or a shelf, is a `spot.perch` instead: `spot.perch(x, heightAboveFloor, z)`, no more than 1.5 m from walkable floor.
-- **Join every upper floor with a link.** For `stairs` and `ramp`, `from` is a point on the lower floor, `to` is a point on the upper floor, and `up` is exactly the difference between their `y` values. Without a link, cats never get there.
-- **List the homes first.** Cat 1 lives at spot 0, cat 2 at spot 1, and so on, so list at least as many spots as cats, with the beds first. Add `{ floor: 'name' }` to any spot that isn't on the first floor.
-- **Keep `defineFloors` errors.** If it throws, the message names the item and the problem. Fix the description; don't catch the error or silence it.
-- **Synced ids:** the cats use synced-entity ids 7300 and up, one per cat. If the scene already uses `syncEntity` with ids in that range, pass `sync` with a free range.
-- **Seats:** if the scene has seating, pass `seats`: a function returning where this visitor is sitting, or `null`. With dcl-sittables it's `seats: () => currentSeat()?.position ?? null`. Don't pass the dcl-sittables module itself.
-- **Credit:** the cats are CC BY 4.0. Add "Cats and cat voices by MetaPetal (dcl-cat-kit), CC BY 4.0" to the scene's description or README.
-
-## Checking your work
-
-- `npm run build` passes with no type errors.
-- In the preview, with `showFloors` on:
-  - the thin green stripes cover the walkable floors;
-  - no stripes run under furniture;
-  - each link shows as a line of small orange posts from floor to floor;
-  - every spot's cube (yellow for sunny spots, blue for the rest) sits where it should.
-- The cats appear within a few seconds. Clicking one close up makes her purr, and clicking from further away calls her over.
-- If there are no cats, look in the scene console for `dcl-cat-kit:` messages, and check that the asset copy was done.
+- **Keep logic out of the runtime files.** Anything that imports `@dcl/sdk/ecs` or `~system/*` can't load in vitest. Put decisions in a pure module and test them there; keep `cats.ts` and `rig.ts` to wiring.
+- **Test first.** Write the failing test, watch it fail, then make it pass. Run the whole suite before you commit.
+- **The scene runtime isn't Node:**
+  - `console` has only `log` and `error`; there's no `warn` or `info`.
+  - `~system` functions may answer without a promise. Use `await` inside a `try`, never `.then` on their result.
+  - Check runtime changes in the example's preview. Unit tests can't catch these.
+- **Messages people see start `dcl-cat-kit: `.** An error a person can fix ends with ` Fix: ` and what to change; a test checks this.
+- **Doc comments are part of the API.** They ship in the `.d.ts` files, and agents read them there. Keep them accurate when behaviour changes.
+- **No café-specific code.** The kit started as the MetaPetal Cat Cafe's cats. Anything specific to one scene belongs in an option or a callback.
+- **Licences:** code is MIT, and assets are CC BY 4.0 (`ASSETS-LICENSE.md`). New assets need their source added to that file.

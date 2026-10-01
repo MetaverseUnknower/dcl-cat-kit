@@ -27,7 +27,7 @@ export function mrraOnPet(rand: () => number, sinceLast: number): boolean {
   return sinceLast >= MRRA_REST && rand() < MRRA_CHANCE
 }
 
-/** A cat chattering at something she's watching (birds, say). */
+/** A cat chattering at something she's watching (from a watch spot). */
 export function chatterClip(name: string): string {
   return file(name, 'chatter')
 }

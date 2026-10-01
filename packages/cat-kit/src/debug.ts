@@ -2,7 +2,11 @@ import { engine, Entity, Transform, MeshRenderer, Material } from '@dcl/sdk/ecs'
 import { Vector3, Color4 } from '@dcl/sdk/math'
 import { Floors, strips } from './floors'
 
-/** Draw a scene's floors for checking them: strips over the walkable cells, a pole at every link point, a cube per spot. */
+/**
+ * Draw the cats' map in the scene, to check it: thin stripes where they can walk (one colour per floor), a small orange
+ * post at every point of every link, and a cube on every spot (yellow: sunny, blue: the rest). Returns a function that
+ * removes it all again. For development: remove it (or hide it behind a key) before you deploy.
+ */
 export function showFloors(f: Floors, o: { spots?: boolean; links?: boolean } = {}): () => void {
   const made: Entity[] = []
   const put = (x: number, y: number, z: number, s: Vector3, color: Color4) => {

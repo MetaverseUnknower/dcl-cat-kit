@@ -6,7 +6,8 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
-    "dcl-cat-kit-copy-assets": "bin/copy-assets.mjs"
+    "dcl-cat-kit-copy-assets": "bin/copy-assets.mjs",
+    "dcl-cat-kit-measure": "bin/measure.mjs"
   },
   "files": [
     "dist",
@@ -37,5 +38,8 @@
     "type": "git",
     "url": "git+https://github.com/MetaverseUnknower/dcl-cat-kit.git",
     "directory": "packages/cat-kit"
+  },
+  "engines": {
+    "node": ">=18"
   }
 }

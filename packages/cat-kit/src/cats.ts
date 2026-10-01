@@ -2,7 +2,7 @@ import { engine, Transform, AudioSource } from '@dcl/sdk/ecs'
 import { Vector3 } from '@dcl/sdk/math'
 import { getPlayer } from '@dcl/sdk/players'
 import { CatSpec, Pose, makeRoutine, setDayStart } from './routine'
-import { AddCatsOptions, KitCat, Playmate, reportMissingModels, seatOf, syncBase } from './options'
+import { AddCatsOptions, KitCat, Playmate, reportMissingModels, seatOf, setupProblems, syncBase } from './options'
 import { getSceneInformation } from '~system/Runtime'
 import { setSoundRoot, callClip } from './voices'
 import { initIntents, readIntent, writeIntent } from './shared'
@@ -15,7 +15,7 @@ import { purrVolume } from './purr'
 import { dist, inBoxes } from './geom'
 import { pickGreeter } from './greet'
 
-const STANDOFF_NEAR = 1.2 // metres apart in the tube when they notice each other and stop
+const STANDOFF_NEAR = 1.2 // metres apart in a narrow passage when they notice each other and stop
 
 /**
  * The cats: the residents first, then today's guests (if any). Their routine
@@ -34,7 +34,19 @@ export const playApi = {
   catchCat: (_i: number): boolean => false
 }
 
+let added = false
+
+/**
+ * Bring the cats to life. Call once, in main(), after defineFloors. Every client simulates the same cats from the
+ * shared clock and the shared claims, so everyone sees the same thing. Set-up problems (files not copied, too few
+ * spots, a second call) are logged as `dcl-cat-kit: …` errors in the scene console, each with a fix.
+ * Returns `{ playApi }`, the hook toys use.
+ */
 export function addCats(o: AddCatsOptions) {
+  const problems = setupProblems({ spots: o.floors.spots.length, cats: o.cats.length, guestsPerDay: o.guests?.perDay ?? 0, alreadyAdded: added })
+  problems.forEach((m) => console.error(m))
+  if (added) return { playApi }
+  added = true
   if (o.sounds) setSoundRoot(o.sounds)
   if (o.dayStartUtcHour !== undefined) setDayStart(o.dayStartUtcHour)
   reportMissingModels(() => getSceneInformation({}), [...o.cats, ...(o.guests?.cats ?? [])], (m) => console.error(m))
@@ -48,7 +60,7 @@ export function addCats(o: AddCatsOptions) {
   const { nav: NAV, links: LINKS, spots: SPOTS } = o.floors
   const localSeat = seatOf(o.seats)
   const inTube = o.floors.narrow
-  const inPlot = (p: { x: number; z: number }) => inBoxes(p, o.floors.bounds)
+  const inScene = (p: { x: number; z: number }) => inBoxes(p, o.floors.bounds)
   const kit = new Map<string, KitCat>([...o.cats, ...(o.guests?.cats ?? [])].map((c) => [c.key, c]))
   const voiceOf = (c: CatSpec) => kit.get(c.key)?.voice ?? c.key
   const routine = makeRoutine(RESIDENTS, REGULARS, GUEST_HOMES, SPOTS, NAV, LINKS)
@@ -83,7 +95,7 @@ export function addCats(o: AddCatsOptions) {
       return {
         i, x: s?.pos.x ?? 0, y: s?.y ?? 0, z: s?.pos.z ?? 0, asleep: asleep(i),
         busy: !!lastPoses[i]?.busy, free: !isActive(cur, now, present) || mine, playing: mine && isActive(cur, now, present),
-        pouncing: !!s && s.mode === 'chasing' && s.pounceT >= 0 // mid-pounce at a laser dot
+        pouncing: !!s && s.mode === 'chasing' && s.pounceT >= 0 // mid-pounce (chasing a toy, such as a laser dot)
       }
     })
   playApi.claim = (i: number, kind: 'play' | 'chase' = 'play') => tryClaim(i, kind)
@@ -155,8 +167,8 @@ export function addCats(o: AddCatsOptions) {
       // Playing, chasing or catching: wherever the toy says (a wand's feather, a laser's dot); otherwise, them.
       const toy = cur.kind === 'play' || cur.kind === 'chase' || cur.kind === 'catch'
       const target = !at ? null : toy ? o.targets?.(cur.kind as 'play' | 'chase' | 'catch', cur.userId, at, Transform.getOrNull(who!.entity)?.rotation ?? null) ?? (cur.kind === 'play' ? at : null) : at
-      // A visitor who has left the plot no longer steers the cat, for anyone.
-      const active = at && inPlot(at) ? cur : null
+      // A visitor who has left the scene no longer steers the cat, for anyone.
+      const active = at && inScene(at) ? cur : null
       const others = states.flatMap((o, j) => (o && j !== i && j < cats.length ? [{ x: o.pos.x, y: o.y, z: o.pos.z }] : []))
       const tubeBusy = inside.some((x, j) => x && j !== i)
       stepCat(s, { routine: today.poses[i], intent: active, target, dt, scale: c.scale, tubeBusy }, NAV, LINKS, others)
@@ -168,7 +180,7 @@ export function addCats(o: AddCatsOptions) {
         const d = dist(mine, s.pos)
         setHover(rigs[i], asleep(i) ? 'asleep' : d <= PET_RANGE ? 'pet' : d <= CALL_RANGE ? 'call' : null)
         if (cur.kind !== '' && cur.userId === me() && isActive(cur, now, present)) {
-          const gone = !inPlot(mine) || (cur.kind === 'visit' && d > CALL_RANGE + 5) || (cur.kind === 'sit' && !seat)
+          const gone = !inScene(mine) || (cur.kind === 'visit' && d > CALL_RANGE + 5) || (cur.kind === 'sit' && !seat)
           if (gone) writeIntent(intents[i], NONE)
         }
       }
@@ -179,12 +191,12 @@ export function addCats(o: AddCatsOptions) {
       // At a watch spot (optional): eyes on what's there, tail flicking, and now and then a chatter.
       const pose = today.poses[i]
       const watching = s.mode === 'routine' && !pose.moving && SPOTS[pose.spot]?.watch !== undefined
-      const bird = watching && o.watch ? o.watch.targets(now, SPOTS[pose.spot].watch!) ?? undefined : undefined
-      if (bird) s.lookAt = { x: bird.x, z: bird.z }
-      const chat = !!bird && !!o.watch?.chatter?.(now, i)
+      const sight = watching && o.watch ? o.watch.targets(now, SPOTS[pose.spot].watch!) ?? undefined : undefined
+      if (sight) s.lookAt = { x: sight.x, z: sight.z }
+      const chat = !!sight && !!o.watch?.chatter?.(now, i)
       if (chat && !chattering[i]) AudioSource.playSound(rigs[i].voice, chatterClip(voiceOf(c)), true)
       chattering[i] = chat
-      poseRig(rigs[i], s, clock, dt, v, mine, !!bird, inTube({ x: s.pos.x, y: s.y, z: s.pos.z }))
+      poseRig(rigs[i], s, clock, dt, v, mine, !!sight, inTube({ x: s.pos.x, y: s.y, z: s.pos.z }))
     })
     // Two cats meeting in a narrow passage stop and stand off; then one backs down and runs back out.
     for (let i = 0; i < cats.length; i++)
@@ -198,8 +210,8 @@ export function addCats(o: AddCatsOptions) {
         startStandoff(a, b.pos, loser === 0)
         startStandoff(b, a.pos, loser === 1)
       }
-    // Arriving (once we know who you are and you're on the plot): at most one cat comes to say hello.
-    const here = !!me() && !!mine && inPlot(mine)
+    // Arriving (once we know who you are and you're in the scene): at most one cat comes to say hello.
+    const here = !!me() && !!mine && inScene(mine)
     if (here && !wasHere && mine) {
       const pick = pickGreeter(
         cats.map((c, i) => ({ i, d: dist(mine, states[i]!.pos), social: c.social, free: !isActive(readIntent(intents[i]), now, present), asleep: asleep(i) })),

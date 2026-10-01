@@ -77,7 +77,17 @@ All positions are in **scene metres**: `x` and `z` across the ground from your s
   - Add `{ floor: 'loft' }` as the last argument for a spot on any floor but the first.
   - **The first spots are homes:** the first cat lives at spot 0, the second at spot 1, and so on. List at least one spot per cat.
 
-If something doesn't fit, `defineFloors` stops with an error saying which item is wrong and why. For example: `link 0 (up 3 m): its top [2,12] isn't on a floor: there's no floor at height 3 there`, or `spot 4 (12, 14) isn't on floor "loft"`.
+If something doesn't fit, `defineFloors` stops with an error that names the item, says what's wrong, and ends with what to change. For example: `dcl-cat-kit: spot 4 (12, 14) isn't on floor "loft". Fix: move it inside that floor's walk shapes and out of its avoid shapes.`
+
+### Measuring models
+
+To find a model's footprint, run the kit's measure command with the position, rotation and scale it has in your scene:
+
+```sh
+npx dcl-cat-kit-measure assets/models/sofa.glb --at 10.5,0,7.5 --rot 180
+```
+
+It prints the model's size and, placed where you said, the `rect(...)` to put in a floor's `avoid`, a `spot.perch(...)` for its top, and the floor to use if it's a platform. `--rot` is in degrees. Use `--quat x,y,z,w` instead for a quaternion, which is how Creator Hub scenes store rotations, and `--scale` for a scaled model.
 
 ## Options
 
@@ -97,14 +107,17 @@ Call `addCats` **once** per scene.
 ## Troubleshooting
 
 - **No cats at all.** Run `npx dcl-cat-kit-copy-assets` in your scene folder. If model files are missing, the kit logs `dcl-cat-kit: no model files for …` in the scene console.
-- **The scene stops at `defineFloors`.** Read the error: it names the floor, link or spot that's wrong. Turn on `showFloors(floors)` to see what the cats see.
+- **The scene stops at `defineFloors`.** Read the error: it names the floor, link or spot that's wrong, and ends with `Fix:`, what to change. Turn on `showFloors(floors)` to see what the cats see.
+- **Two cats share a bed.** There are fewer spots than cats. The scene console says so; add spots, since the first ones are the homes.
 - **A cat walks through furniture.** Add the furniture to that floor's `avoid` list.
 - **A cat never goes upstairs.** Add a link to that floor, and give her a spot up there.
 - **Odd behaviour alongside another kit.** Two kits may be using the same synced-entity ids. Move the cats with `sync`.
 
 ## For AI agents
 
-If you're an AI agent setting up cats in someone's scene, read [`AGENTS.md`](./AGENTS.md) first.
+If you're an AI agent setting up cats in someone's scene, read [`AGENTS.md`](./AGENTS.md) first. It covers finding coordinates in a scene you can't see, a template, the rules, and every error with its fix. It ships in the npm package, at `node_modules/dcl-cat-kit/AGENTS.md`.
+
+To install it as a skill for your agent: `npx skills add MetaverseUnknower/dcl-cat-kit`.
 
 ## Licences
 

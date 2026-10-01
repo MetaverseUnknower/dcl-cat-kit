@@ -1,7 +1,7 @@
 /**
- * What a cat has been asked to do, shared by everyone in the cafe: go and say
+ * What a cat has been asked to do, shared by everyone in the scene: go and say
  * hello to someone (visit), stay put while being petted (pet), curl up by a
- * seated visitor (sit), come and play with the Feather Wand (play), chase a
+ * seated visitor (sit), come and play with a toy (play), chase a
  * Laser Ring's dot (chase), or catch it as it's switched off on her (catch). The first claim wins; it lapses on its
  * own, or as soon as its visitor leaves the scene.
  */

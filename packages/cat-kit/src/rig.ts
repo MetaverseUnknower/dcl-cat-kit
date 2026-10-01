@@ -21,7 +21,7 @@ export type Rig = {
   target: Entity; label: Entity; purr: Entity; voice: Entity; headYaw: number; hover: Hover | null; dressed: string; shut: number
   /** Her own blink rhythm. */
   seed: number
-  /** 0 to 1: her tail lowered to trail straight back, walking through the sky tunnel. */
+  /** 0 to 1: her tail lowered to trail straight back, walking through a narrow passage. */
   tuck: number
 }
 
@@ -89,7 +89,7 @@ export function createRig(onClick: () => void, seed = 0): Rig {
 const smooth = (x: number) => x * x * (3 - 2 * x)
 
 /**
- * Pose the rig from the controller's state (ported from Faith's posing at the HQ), plus:
+ * Pose the rig from the controller's state (first made for Faith at MetaPetal HQ), plus:
  * curled up (tipped onto her side, head turned back to her tail, tail wrapped round, paws
  * tucked), the play-bow stretch (chest down, rear up, forelegs out), and sleep (eyes shut,
  * slow deep breaths).
@@ -133,8 +133,8 @@ export function poseRig(r: Rig, s: CatState, clock: number, dt: number, purring:
     Transform.getMutable(leg).rotation = Quaternion.fromEulerDegrees(angle + (-60 + 25 * Math.sin(clock * 2 * Math.PI * 2) - angle) * swipe, 0, 0)
   })
   const twitch = Math.sin(clock * 0.9) * Math.max(0, Math.sin(clock * 0.21)) * 14 * (1 - asleep) + 25 * wiggle * Math.sin(clock * 11)
-    + (watching ? 18 * Math.sin(clock * 5.5) : 0) // watching the birds: the tail tip flicks and flicks
-  r.tuck += ((inTube ? 1 : 0) - r.tuck) * Math.min(1, dt * 4) // in the tunnel: tail down and trailing, clear of the glass
+    + (watching ? 18 * Math.sin(clock * 5.5) : 0) // watching something: the tail tip flicks and flicks
+  r.tuck += ((inTube ? 1 : 0) - r.tuck) * Math.min(1, dt * 4) // in a narrow passage: tail down and trailing
   const tuck = smooth(r.tuck)
   const tailPitch = (18 * (1 - stand) - 62 * stand + (walking ? 4 * Math.sin(phase * 0.5) : 0)) * (1 - tuck) + 6 * tuck
   const tailYaw = ((55 + twitch) * (1 - stand) + 10 * Math.sin(clock * 1.3) * stand) * (1 - tuck)

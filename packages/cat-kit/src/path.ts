@@ -227,7 +227,7 @@ export function along(path: XZ[], d: number): { p: XZ; yaw: number } {
 /** The areas the cats walk (a scene's floors): each a walkable grid over its own box, at its floor's height. */
 export type Area = Grid & { y: number }
 export type Nav = { areas: Area[] }
-/** A point on a route. `hop`: she leaps to it from the point before; `link`: it's on a link (stairs, climb or tunnel). */
+/** A point on a route. `hop`: she leaps to it from the point before; `link`: it's on a link (stairs, ramp, climb or narrow passage). */
 export type P3 = { x: number; y: number; z: number; hop?: boolean; link?: boolean }
 /** A way between two areas, from area `a` (its bottom end) to area `b` (its top end). */
 export type Link = { a: number; b: number; bottom: XZ; top: XZ; points: P3[] }

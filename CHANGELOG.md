@@ -4,3 +4,7 @@
 
 - The cats as a package: defineFloors, addCats, the cafe's seven residents, showFloors.
 - README with a quick start, and AGENTS.md for AI agents setting up cats.
+- Agents: a fuller AGENTS.md (finding coordinates, a template, every error with its fix), the agent skill (skills/dcl-cat-kit), and a contributor AGENTS.md.
+- `npx dcl-cat-kit-measure`: a model's footprint as defineFloors shapes.
+- Errors end with `Fix:`; addCats logs too few spots or a second call.
+- Doc comments now ship in the .d.ts files.

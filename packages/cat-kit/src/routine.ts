@@ -204,7 +204,7 @@ export function makeRoutine(residents: CatSpec[], regulars: Regular[], guestHome
     boxes.set(trip, b)
     return b
   }
-  // The wall climb and the sky tunnel are single file: while a cat is on one (from leaving the
+  // Climbs and narrow passages are single file: while a cat is on one (from leaving the
   // floor to stepping out onto the other), no other cat is on that one. Each stretch of a route
   // along a link with hops is a span, keyed by its two ends (the same whichever way she goes).
   type Span = { key: string; t0: number; t1: number }
@@ -325,7 +325,7 @@ export function makeRoutine(residents: CatSpec[], regulars: Regular[], guestHome
     const trip = { from: run.spot, to, path, tl, len, t0: t, tWalk0, tWalk1, t1: tWalk1 + (hopIn + SETTLE) * 1000, up, curl0 }
     const blocked = run.waited < MAX_WAIT || !goingHome ? crosses(i, trip) : null
     if (blocked) {
-      // someone's in the way: let them pass first (for the climb or the tunnel, until it's clear)
+      // someone's in the way: let them pass first (for a climb or a narrow passage, until it's clear)
       const wait = Math.min(MAX_WAIT, Math.max(WAIT, blocked.clear))
       run.waited += wait
       run.restUntil = t + wait

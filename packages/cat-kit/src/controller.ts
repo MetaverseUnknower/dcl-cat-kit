@@ -48,11 +48,11 @@ export type CatState = {
   asleep: boolean
   still: number
   wake: number
-  /** Playing with a feather wand: the butt-wiggle before a pounce (0-1), batting with a front paw (0-1), and her place. */
+  /** Playing with a toy (a wand's feather, say): the butt-wiggle before a pounce (0-1), batting with a front paw (0-1), and her place. */
   wiggle: number
   bat: number
   playAt: P3 | null
-  /** Chasing a laser dot: where it last settled and how long it's been still, crouched for it, a pounce under way. */
+  /** Chasing a toy that darts about (a laser dot, say): where it last settled and how long it's been still, crouched for it, a pounce under way. */
   dotAt: XZ | null
   dotStill: number
   crouched: boolean
@@ -68,9 +68,9 @@ export type CatState = {
   lostT: number
   /** A satisfied tail flick (0-1), after a catch. */
   flick: number
-  /** Her route's stretch through the sky tunnel: the index of its first point, and when she steps onto it. */
+  /** Her route's stretch through a narrow passage: the index of its first point, and when she steps onto it. */
   tube: { k: number; t: number } | null
-  /** A standoff in the tube: who she's facing, whether she's the one who backs down, and the growl and hiss cues. */
+  /** A standoff in a narrow passage: who she's facing, whether she's the one who backs down, and the growl and hiss cues. */
   foe: XZ | null
   loser: boolean
   wasRoutine: boolean
@@ -79,7 +79,7 @@ export type CatState = {
   hiss: boolean
 }
 /** `target` is the visitor's position, including their height (so which floor they're on). */
-/** `tubeBusy`: another cat is in the sky tunnel, so she doesn't step into it. */
+/** `tubeBusy`: another cat is in a narrow passage, so she doesn't step into it. */
 export type Input = { routine: Pose; intent: Intent | null; target: P3 | null; dt: number; scale: number; tubeBusy?: boolean }
 
 const RISE = 1.1
@@ -109,7 +109,7 @@ const LEAP_HIGH = 0.25 // metres: the top of the leap's arc
 const GETS_IT = 0.1 // one go in ten she works out she can leap on it from a way off
 const LOST_FOR = 3 // seconds standing over it, looking for it, before another go
 const PIN_BACK = 0.15 // metres: her body behind the dot, front paws on it
-export const STANDOFF_SECONDS = 3.6 // stopped face to face in the tube: growling, hissing, swatting
+export const STANDOFF_SECONDS = 3.6 // stopped face to face in a narrow passage: growling, hissing, swatting
 const RUN = 1.6 // m/s: backing down, she turns tail and runs
 
 /** A number in [0, 1) from a string, the same on every client (so they all make the same call). */
@@ -218,7 +218,7 @@ function plan(s: CatState, nav: Nav, links: Link[], goal: P3, speed: number) {
   s.tube = tubeStretch(s.path, s.tl)
 }
 
-/** Where a route steps onto the sky tunnel's link (its run of link points that goes through the tube), if it does. */
+/** Where a route steps onto a narrow passage's link (its run of link points through the passage), if it does. */
 function tubeStretch(path: P3[], tl: Timeline): { k: number; t: number } | null {
   let k = 0
   while (k < path.length) {
@@ -234,7 +234,7 @@ function tubeStretch(path: P3[], tl: Timeline): { k: number; t: number } | null 
   return null
 }
 
-/** Start a standoff in the tube with the cat at `foe`: they stop face to face; `loser` backs down after. */
+/** Start a standoff in a narrow passage with the cat at `foe`: they stop face to face; `loser` backs down after. */
 export function startStandoff(s: CatState, foe: XZ, loser: boolean) {
   s.wasRoutine = s.mode === 'routine'
   s.mode = 'standoff'
@@ -246,7 +246,7 @@ export function startStandoff(s: CatState, foe: XZ, loser: boolean) {
 }
 
 /**
- * Which of two cats meeting in the tube backs down (0 or 1). The one on her everyday rounds
+ * Which of two cats meeting in a narrow passage backs down (0 or 1). The one on her everyday rounds
  * never does: the routine is the same for everyone. Otherwise the later one in backs out.
  */
 export function pickLoser(a: { mode: Mode; inTubeFor: number }, b: { mode: Mode; inTubeFor: number }): 0 | 1 {
@@ -255,12 +255,12 @@ export function pickLoser(a: { mode: Mode; inTubeFor: number }, b: { mode: Mode;
   return a.inTubeFor < b.inTubeFor ? 0 : 1
 }
 
-/** How long she's been in the tube along her route (0 if she isn't on it). */
+/** How long she's been in the narrow passage along her route (0 if she isn't on it). */
 export function inTubeFor(s: CatState): number {
   return s.tube && s.d > s.tube.t ? s.d - s.tube.t : 0
 }
 
-/** Back the way she came: from where she is along her route to just before the tunnel. */
+/** Back the way she came: from where she is along her route to just before the narrow passage. */
 function backOut(s: CatState): P3[] {
   if (!s.tube || !s.tl) return []
   let i = s.tube.k - 1
@@ -279,7 +279,7 @@ function follow(s: CatState, y: number, dt: number) {
 function walk(s: CatState, dt: number, tubeBusy = false): boolean {
   if (!s.tl) return true
   if (tubeBusy && s.tube && s.d <= s.tube.t + 1e-6) {
-    s.d = Math.min(s.tube.t, s.d + dt) // up to the tunnel's entrance, and wait there for it to clear
+    s.d = Math.min(s.tube.t, s.d + dt) // up to the passage's entrance, and wait there for it to clear
     if (s.d >= s.tube.t - 1e-6) {
       s.pos = { x: s.path[s.tube.k - 1].x, z: s.path[s.tube.k - 1].z }
       return false
@@ -319,7 +319,7 @@ export function stepCat(s: CatState, input: Input, nav: Nav, links: Link[], othe
   s.hiss = false
   const key = intent ? `${intent.kind}:${intent.userId}:${intent.since}` : ''
   // Partway up the stairs or the climb, or mid-leap, she finishes that before answering anyone.
-  // In a standoff in the tunnel, or backing out of it, she sees that through first.
+  // In a standoff in a narrow passage, or backing out of it, she sees that through first.
   if (key !== s.key && !(s.mode === 'routine' && routine.busy) && s.mode !== 'standoff' && s.mode !== 'retreat') {
     s.key = key
     s.t = 0
@@ -597,7 +597,7 @@ export function stepCat(s: CatState, input: Input, nav: Nav, links: Link[], othe
           s.link = null
           s.tube = null
         } else if (s.wasRoutine && !intent) {
-          // On her rounds: straight back to them, catching up along the tube.
+          // On her rounds: straight back to them, catching up along the passage.
           s.mode = 'routine'
           s.blend = 1
           s.path = []
@@ -607,7 +607,7 @@ export function stepCat(s: CatState, input: Input, nav: Nav, links: Link[], othe
         } else {
           // She carries on to where she was going (or back to her rounds).
           s.mode = intent ? 'going' : 'rejoin'
-          if (s.tl) s.replan = REPLAN // keep her current route: she's partway through the tube
+          if (s.tl) s.replan = REPLAN // keep her current route: she's partway through the passage
         }
       }
       break
