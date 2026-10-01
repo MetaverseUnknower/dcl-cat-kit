@@ -8,3 +8,5 @@
 - `npx dcl-cat-kit-measure`: a model's footprint as defineFloors shapes.
 - Errors end with `Fix:`; addCats logs too few spots or a second call.
 - Doc comments now ship in the .d.ts files.
+- `npx dcl-cat-kit-check`: run a built scene outside Decentraland and report every mistake the kit finds, so an agent can check its work without a person.
+- Docs: existing steps, platforms, perches, spot counts, committing the assets, the cats' personalities.

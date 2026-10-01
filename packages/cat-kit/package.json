@@ -7,7 +7,8 @@
   "types": "dist/index.d.ts",
   "bin": {
     "dcl-cat-kit-copy-assets": "bin/copy-assets.mjs",
-    "dcl-cat-kit-measure": "bin/measure.mjs"
+    "dcl-cat-kit-measure": "bin/measure.mjs",
+    "dcl-cat-kit-check": "bin/check.mjs"
   },
   "files": [
     "dist",

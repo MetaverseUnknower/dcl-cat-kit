@@ -20,7 +20,7 @@ npm install dcl-cat-kit
 npx dcl-cat-kit-copy-assets
 ```
 
-The second command copies the cats' models and voices (about 2.7 MB) into `assets/dcl-cat-kit/`. **Without this step the cats are invisible.** Run it again after you update the kit.
+The second command copies the cats' models and voices (about 2.7 MB) into `assets/dcl-cat-kit/`. **Without this step the cats are invisible.** Commit that folder with your scene. To have the copy run again after every install or update, add `"postinstall": "dcl-cat-kit-copy-assets"` to your scripts.
 
 **2. Describe your floors and add some cats** in `src/index.ts`:
 
@@ -48,11 +48,25 @@ export function main() {
 }
 ```
 
-**3. Run `npm run start`** and look around. `showFloors` draws thin stripes where the cats can walk, small orange posts along each link, and a cube on each spot (yellow for sunny spots, blue for the rest).
+**3. Check it:** run `npm run build && npx dcl-cat-kit-check`. It runs your scene outside Decentraland and reports any mistake the kit finds, each with its fix, or `OK` and the cats' names.
+
+**4. Run `npm run start`** and look around. `showFloors` draws thin stripes where the cats can walk, small orange posts along each link, and a cube on each spot (yellow for sunny spots, blue for the rest).
 
 ## The cats
 
-`CAFE_CATS` has the cafe's seven residents, ready to go: `nermal`, `tigger`, `smoky`, `cloud`, `faith`, `haze` and `smudge`. Each has her own coat, size, voice and personality (how sociable she is, how much she naps, how far she roams). Use as many as you like, but each cat needs her own home spot.
+`CAFE_CATS` has the cafe's seven residents, ready to go. Each has her own coat, size, voice and personality. Use as many as you like, but each cat needs her own home spot.
+
+| Cat | Size | Sociable | Naps | Roams | In short |
+|---|---|---|---|---|---|
+| `tigger` | 1.08 | 0.85 | 0.4 | 0.7 | The biggest and friendliest: always up for company. |
+| `faith` | 1.0 | 0.75 | 0.6 | 0.5 | Friendly and easy-going. |
+| `cloud` | 0.96 | 0.7 | 0.5 | 0.6 | Friendly, and a little small. |
+| `smudge` | 1.0 | 0.65 | 0.55 | 0.55 | Middle of the road in everything. |
+| `nermal` | 1.0 | 0.6 | 0.5 | 0.6 | Sociable enough, and likes a wander. |
+| `haze` | 0.94 | 0.5 | 0.55 | 0.8 | The smallest, and the explorer: roams the most. |
+| `smoky` | 1.04 | 0.4 | 0.75 | 0.4 | Shy and sleepy: a homebody. |
+
+Sociable decides how likely she is to greet you or curl up by you. Naps is how much of the day she sleeps, and roams is how far she wanders.
 
 ## Describing floors
 
@@ -106,7 +120,7 @@ Call `addCats` **once** per scene.
 
 ## Troubleshooting
 
-- **No cats at all.** Run `npx dcl-cat-kit-copy-assets` in your scene folder. If model files are missing, the kit logs `dcl-cat-kit: no model files for …` in the scene console.
+- **No cats at all.** Run `npm run build && npx dcl-cat-kit-check`: it says what's wrong. Usually the model files weren't copied (`npx dcl-cat-kit-copy-assets`).
 - **The scene stops at `defineFloors`.** Read the error: it names the floor, link or spot that's wrong, and ends with `Fix:`, what to change. Turn on `showFloors(floors)` to see what the cats see.
 - **Two cats share a bed.** There are fewer spots than cats. The scene console says so; add spots, since the first ones are the homes.
 - **A cat walks through furniture.** Add the furniture to that floor's `avoid` list.

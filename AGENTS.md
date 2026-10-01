@@ -22,7 +22,11 @@ These instructions are for agents (and people) changing the kit itself. **Settin
     - `shared.ts`: the synced claims.
     - `debug.ts`: `showFloors`.
     - `index.ts`.
-- `packages/cat-kit/bin/`: the commands. `copy-assets.mjs` copies the cats into a scene. `measure.mjs` uses the logic in `glb-bounds.mjs`, which is tested.
+- `packages/cat-kit/bin/`: the commands.
+  - `copy-assets.mjs` copies the cats into a scene.
+  - `measure.mjs` measures a model, using the logic in `glb-bounds.mjs`.
+  - `check.mjs` runs a built scene in Node with a stand-in runtime and reports the kit's messages, using the logic in `check-lib.mjs`.
+  - Both logic files are tested.
 - `packages/cat-kit/assets/`: the cats' models (`cats/<key>-<part>.glb` and one shared texture) and voices (`sounds/`). These are CC BY 4.0, not MIT.
 - `packages/cat-kit/test/`: the vitest tests. `fixtures/` holds a real scene's floors (the MetaPetal Cat Cafe's), used by the older tests.
 - `example/`: a scene that uses the kit and dcl-sittables. It's the manual test.
@@ -47,7 +51,7 @@ npm run example             # build, copy assets into the example, and start its
 - **The scene runtime isn't Node:**
   - `console` has only `log` and `error`; there's no `warn` or `info`.
   - `~system` functions may answer without a promise. Use `await` inside a `try`, never `.then` on their result.
-  - Check runtime changes in the example's preview. Unit tests can't catch these.
+  - Check runtime changes in the example: `npx dcl-cat-kit-check` there, then its preview. Unit tests can't catch these, and the check's stand-in runtime can be kinder than the real one (it caught nothing when `getSceneInformation` returned a promise there but not in the client).
 - **Messages people see start `dcl-cat-kit: `.** An error a person can fix ends with ` Fix: ` and what to change; a test checks this.
 - **Doc comments are part of the API.** They ship in the `.d.ts` files, and agents read them there. Keep them accurate when behaviour changes.
 - **No café-specific code.** The kit started as the MetaPetal Cat Cafe's cats. Anything specific to one scene belongs in an option or a callback.
