@@ -130,3 +130,34 @@ describe('the debug view', () => {
     expect(runs.reduce((n, r) => n + r.cells, 0)).toBe(cells)
   })
 })
+
+import { reportMissingModels } from '../src/options'
+import { CAFE_CATS } from '../src/catalog'
+const test = it
+describe('the missing-files check never stops the cats', () => {
+  const faith = CAFE_CATS.faith
+  const haze = CAFE_CATS.haze
+  const content = { content: [{ file: 'assets/dcl-cat-kit/cats/faith-body.glb', hash: 'x' }] }
+  test('a runtime that answers without a promise (the real client) is fine, and still reports', async () => {
+    const said: string[] = []
+    expect(() => reportMissingModels(() => content as any, [faith, haze], (m) => said.push(m))).not.toThrow()
+    await new Promise((r) => setTimeout(r, 0))
+    expect(said.join()).toContain('haze')
+    expect(said.join()).not.toContain('faith,')
+  })
+  test('a promise works too', async () => {
+    const said: string[] = []
+    reportMissingModels(async () => content, [faith, haze], (m) => said.push(m))
+    await new Promise((r) => setTimeout(r, 0))
+    expect(said.join()).toContain('haze')
+  })
+  test('a getter that throws, rejects or returns junk says nothing and throws nothing', async () => {
+    const said: string[] = []
+    expect(() => reportMissingModels(() => { throw new Error('no') }, [haze], (m) => said.push(m))).not.toThrow()
+    reportMissingModels(async () => { throw new Error('no') }, [haze], (m) => said.push(m))
+    reportMissingModels(() => undefined as any, [haze], (m) => said.push(m))
+    reportMissingModels(() => ({ content: 'nope' }) as any, [haze], (m) => said.push(m))
+    await new Promise((r) => setTimeout(r, 0))
+    expect(said).toEqual([])
+  })
+})

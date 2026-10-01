@@ -33,3 +33,17 @@ export function missingModels(files: string[], cats: KitCat[]): string[] {
   const have = new Set(files.map((f) => f.toLowerCase()))
   return cats.filter((c) => !have.has(`${c.models}-body.glb`.toLowerCase())).map((c) => c.key)
 }
+
+/**
+ * Best effort: say which cats' model files aren't in the scene (copy-assets not run), rather than leave them
+ * invisible. `getInfo` is the runtime's getSceneInformation, whose answer may or may not be a promise; whatever
+ * it does (answers, rejects, throws, returns junk), this never throws and never stops the cats.
+ */
+export function reportMissingModels(getInfo: () => unknown, cats: KitCat[], log: (msg: string) => void) {
+  void (async () => {
+    const info = (await getInfo()) as { content?: unknown } | undefined
+    if (!Array.isArray(info?.content)) return
+    const missing = missingModels(info!.content.map((c: { file?: unknown }) => String(c?.file ?? '')), cats)
+    if (missing.length) log(`dcl-cat-kit: no model files for ${missing.join(', ')}: run \`npx dcl-cat-kit-copy-assets\` in your scene folder`)
+  })().catch(() => {})
+}

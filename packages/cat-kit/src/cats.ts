@@ -2,7 +2,7 @@ import { engine, Transform, AudioSource } from '@dcl/sdk/ecs'
 import { Vector3 } from '@dcl/sdk/math'
 import { getPlayer } from '@dcl/sdk/players'
 import { CatSpec, Pose, makeRoutine, setDayStart } from './routine'
-import { AddCatsOptions, KitCat, Playmate, missingModels, seatOf, syncBase } from './options'
+import { AddCatsOptions, KitCat, Playmate, reportMissingModels, seatOf, syncBase } from './options'
 import { getSceneInformation } from '~system/Runtime'
 import { setSoundRoot, callClip } from './voices'
 import { initIntents, readIntent, writeIntent } from './shared'
@@ -37,13 +37,7 @@ export const playApi = {
 export function addCats(o: AddCatsOptions) {
   if (o.sounds) setSoundRoot(o.sounds)
   if (o.dayStartUtcHour !== undefined) setDayStart(o.dayStartUtcHour)
-  // Best effort: say which cats' files aren't in the scene (copy-assets not run), rather than leave them invisible
-  void getSceneInformation({})
-    .then((info) => {
-      const missing = missingModels(info.content.map((c) => c.file), [...o.cats, ...(o.guests?.cats ?? [])])
-      if (missing.length) console.error(`dcl-cat-kit: no model files for ${missing.join(', ')}: run \`npx dcl-cat-kit-copy-assets\` in your scene folder`)
-    })
-    .catch(() => {})
+  reportMissingModels(() => getSceneInformation({}), [...o.cats, ...(o.guests?.cats ?? [])], (m) => console.error(m))
   setNarrow(o.floors.narrow)
   const homes = o.floors.homes(o.cats.length + (o.guests?.perDay ?? 0))
   const RESIDENTS: CatSpec[] = o.cats.map((c, k) => ({ ...c, home: c.home ?? homes[k] }))
