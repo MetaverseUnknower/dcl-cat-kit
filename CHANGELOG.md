@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.1.0 (unreleased)
+## 0.1.0 (2026-09-30)
 
 - The cats as a package: defineFloors, addCats, the cafe's seven residents, showFloors.
 - README with a quick start, and AGENTS.md for AI agents setting up cats.
