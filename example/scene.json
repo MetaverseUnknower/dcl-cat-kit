@@ -3,7 +3,7 @@
   "runtimeVersion": "7",
   "display": {
     "title": "dcl-cat-kit example",
-    "description": "A room with a loft and stairs, and three of the MetaPetal Cat Cafe's cats (dcl-cat-kit)"
+    "description": "A cosy cat room with three of the MetaPetal Cat Cafe's cats (dcl-cat-kit). Cats and cat voices by MetaPetal (dcl-cat-kit), CC BY 4.0. Furniture by MetaPetal (dcl-lounge-kit), CC BY 4.0."
   },
   "owner": "",
   "contact": {
@@ -37,12 +37,15 @@
         ]
       },
       "cameraTarget": {
-        "x": 8,
-        "y": 1.5,
-        "z": 10
+        "x": 10,
+        "y": 1.2,
+        "z": 12
       }
     }
   ],
-  "requiredPermissions": [],
+  "requiredPermissions": [
+    "ALLOW_TO_MOVE_PLAYER_INSIDE_SCENE",
+    "ALLOW_TO_TRIGGER_AVATAR_EMOTE"
+  ],
   "featureToggles": {}
 }

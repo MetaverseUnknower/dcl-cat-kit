@@ -19,7 +19,7 @@ Read this before adding cats to someone's Decentraland SDK7 scene. The README ha
 - **List the homes first.** Cat 1 lives at spot 0, cat 2 at spot 1, and so on, so list at least as many spots as cats, with the beds first. Add `{ floor: 'name' }` to any spot that isn't on the first floor.
 - **Keep `defineFloors` errors.** If it throws, the message names the item and the problem. Fix the description; don't catch the error or silence it.
 - **Synced ids:** the cats use synced-entity ids 7300 and up, one per cat. If the scene already uses `syncEntity` with ids in that range, pass `sync` with a free range.
-- **Seats:** if the scene has seating (for example `dcl-sittables`), pass it as `seats` so cats can curl up by seated visitors.
+- **Seats:** if the scene has seating, pass `seats`: a function returning where this visitor is sitting, or `null`. With dcl-sittables it's `seats: () => currentSeat()?.position ?? null`. Don't pass the dcl-sittables module itself.
 - **Credit:** the cats are CC BY 4.0. Add "Cats and cat voices by MetaPetal (dcl-cat-kit), CC BY 4.0" to the scene's description or README.
 
 ## Checking your work

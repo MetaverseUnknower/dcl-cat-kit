@@ -85,7 +85,7 @@ If something doesn't fit, `defineFloors` stops with an error saying which item i
 
 | Option | What it does |
 |---|---|
-| `seats` | Lets a cat curl up by a seated visitor. Pass anything with a `localSeat()` method returning `{ x, y, z }` or `null` (such as a `dcl-sittables` instance), or a function that does the same. |
+| `seats` | Lets a cat curl up by a seated visitor: a function returning where this visitor is sitting (`{ x, y, z }`), or `null` when they aren't. With [dcl-sittables](https://www.npmjs.com/package/dcl-sittables): `seats: () => currentSeat()?.position ?? null`. (An object with a `localSeat()` method works too.) |
 | `sync` | The first synced-entity id the cats use. They take one id each, from 7300 by default. Change it if your scene already uses those ids. |
 | `dayStartUtcHour` | The hour (UTC) the cats' day turns over. They're home asleep for the half hour before it. The default is 10. |
 | `guests` | `{ cats, perDay }`: visiting cats. `perDay` of them come each day, chosen from `cats`. Add a home spot for each, after the residents' homes. |
@@ -105,7 +105,7 @@ Call `addCats` **once** per scene.
 ## In this repository
 
 - `packages/cat-kit`: the package (code, cats, voices and tests). Run `npm test` and `npm run build` there.
-- `example`: a sample scene with a room, a loft and three cats. Run `npm run start` there.
+- `example`: a cosy cat room with three cats, a platform with steps and a cat tree, and a sofa from dcl-sittables. Run `npm run copy-assets` and then `npm run start` there.
 
 ## For AI agents
 

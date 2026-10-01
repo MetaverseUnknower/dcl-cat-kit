@@ -4,10 +4,11 @@
   "scripts": {
     "start": "sdk-commands start",
     "build": "sdk-commands build",
-    "copy-assets": "dcl-cat-kit-copy-assets"
+    "copy-assets": "dcl-cat-kit-copy-assets && dcl-sittables-copy-assets"
   },
   "dependencies": {
-    "dcl-cat-kit": "*"
+    "dcl-cat-kit": "*",
+    "dcl-sittables": "^0.1.0"
   },
   "devDependencies": {
     "@dcl/js-runtime": "7.29.0",

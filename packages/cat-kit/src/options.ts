@@ -5,7 +5,7 @@ import { Floors } from './floors'
  * her voice (the name her sound files start with). `home` is optional: the floors hand out homes. */
 export type KitCat = Omit<CatSpec, 'home'> & { home?: number; models: string; voice: string }
 type Seat = { x: number; y: number; z: number }
-/** Where this visitor is sitting: a dcl-sittables instance, or a function. */
+/** Where this visitor is sitting: a function (with dcl-sittables, `() => currentSeat()?.position ?? null`), or an object with `localSeat()`. */
 export type Seats = { localSeat(): Seat | null } | (() => Seat | null)
 export type Quat = { x: number; y: number; z: number; w: number }
 /** For toys: where a cat playing (`play`), chasing (`chase`) or catching (`catch`) with this visitor should go. */
